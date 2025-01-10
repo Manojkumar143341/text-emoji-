@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Glowing Emojis with Stories</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f7f7f7;
+      margin: 0;
+      padding: 0;
+    }
+
+    .emoji-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    .emoji {
+      font-size: 60px;
+      padding: 20px;
+      margin: 10px;
+      border-radius: 20px;
+      transition: transform 0.3s ease, filter 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+      display: inline-block;
+      cursor: pointer;
+      position: relative;
+      text-align: center;
+      opacity: 1; /* Default opacity */
+    }
+
+    .emoji:hover {
+      transform: scale(1.2);
+      box-shadow: 0 0 20px 10px rgba(255, 255, 255, 0.8);
+    }
+
+    .emoji-name {
+      font-size: 18px;
+      color: #333;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+    .story {
+      font-size: 18px;
+      color: #847979;
+      font-style: italic;
+      display: none;
+      position: absolute;
+      top: -50px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .input-container {
+      margin-top: 30px;
+    }
+
+    input[type="text"] {
+      padding: 10px 20px;
+      font-size: 16px;
+      width: 300px;
+      border-radius: 10px;
+      border: 2px solid #008CBA;
+      outline: none;
+      transition: border 0.3s;
+    }
+
+    input[type="text"]:focus {
+      border-color: #005f6b;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="input-container">
+    <label for="emojiInput">FUNNY EMOJII</label><br>
+    <br>
+    <input type="text" id="emojiInput" oninput="handleTextInput()" placeholder="Enter emoji keyword">
+  </div>
+
+  <div class="emoji-container" id="emojiContainer"></div>
+
+  <script>
+    // Predefined list of emojis and their corresponding stories
+    const emojiData = [
+      { emoji: "😊", name: "smile", story: "Once upon a time, there was a little smile that brightened up everyone's day!" },
+      { emoji: "😞", name: "sad", story: "A sad little face wandered through the forest, looking for someone to share its feelings." },
+      { emoji: "❤️", name: "heart", story: "A heart filled with love traveled across the world, bringing joy and kindness wherever it went." },
+      { emoji: "😂", name: "laugh", story: "A laugh echoed through the hills, spreading happiness to all who heard it." },
+      { emoji: "😉", name: "wink", story: "A wink was a secret told between friends, a gesture of trust and fun." },
+      { emoji: "🌟", name: "star", story: "A star shined brightly in the night sky, guiding travelers on their journey through the dark." },
+      { emoji: "😍", name: "love", story: "Love conquered all, making everything feel brighter and more beautiful." },
+      { emoji: "😎", name: "cool", story: "A cool attitude helped one navigate through the challenges of life." },
+      { emoji: "🤔", name: "thinking", story: "A thinking face pondered the mysteries of the universe." },
+      { emoji: "😜", name: "playful", story: "A playful spirit brought laughter and joy to every moment." },
+      { emoji: "😇", name: "angel", story: "An angel watched over everyone, guiding them with kindness and care." },
+      { emoji: "😝", name: "silly", story: "Silly faces were made, bringing fun and humor to even the dullest moments." },
+      { emoji: "💪", name: "strong", story: "Strength came from within, empowering one to overcome any obstacle." },
+      { emoji: "🧠", name: "brain", story: "The brain worked tirelessly to solve problems and create new ideas." },
+      { emoji: "🌈", name: "rainbow", story: "After the storm, a beautiful rainbow appeared in the sky, bringing hope to all." },
+      { emoji: "🍀", name: "luck", story: "Luck smiled upon them, granting success in their endeavors." },
+      { emoji: "🔥", name: "fire", story: "A fire burned brightly, symbolizing passion and energy." },
+      { emoji: "🌻", name: "flower", story: "A flower bloomed, bringing beauty and freshness to the world." },
+      { emoji: "🎉", name: "celebration", story: "Celebration filled the air, marking a moment of joy and achievement." },
+      { emoji: "💎", name: "diamond", story: "Like a diamond, they were strong and valuable, shining bright." },
+      { emoji: "💔", name: "broken-heart", story: "A broken heart was mended with time, patience, and love." },
+      { emoji: "🦄", name: "unicorn", story: "A unicorn galloped through a mystical land, spreading magic and wonder." },
+      { emoji: "🍕", name: "pizza", story: "A pizza party brought people together, sharing laughter and delicious food." },
+      { emoji: "🎶", name: "music", story: "Music filled the air, bringing harmony and joy to all who heard it." },
+      { emoji: "🎁", name: "gift", story: "A thoughtful gift was given, spreading love and happiness." },
+      { emoji: "🚀", name: "rocket", story: "A rocket soared into space, exploring new horizons and infinite possibilities." },
+      { emoji: "🏆", name: "trophy", story: "A trophy was awarded to those who gave their best effort and achieved greatness." },
+      { emoji: "⏰", name: "time", story: "Time moved on, and with it, so did the lessons and growth it brought." },
+      { emoji: "🍎", name: "apple", story: "An apple a day kept the doctor away, a simple truth we all embrace." },
+      { emoji: "🎨", name: "art", story: "Art told stories that words could not, capturing the beauty of the world." },
+      { emoji: "🦋", name: "butterfly", story: "A butterfly fluttered through the air, symbolizing transformation and grace." },
+      { emoji: "🍀", name: "lucky", story: "A four-leaf clover brought a bit of good luck to the one who found it." },
+      { emoji: "🏖️", name: "vacation", story: "A vacation allowed one to rest, relax, and recharge for new adventures." },
+      { emoji: "🎮", name: "gaming", story: "Gaming was a portal to new worlds, offering excitement and challenges." },
+      { emoji: "⚡", name: "lightning", story: "A flash of lightning lit up the sky, illuminating the night with its power." },
+      { emoji: "🐱", name: "cat", story: "A curious cat explored the world with wonder, always finding new adventures." },
+      { emoji: "🐶", name: "dog", story: "A loyal dog was a true friend, always there when needed most." }
+    ];
+
+    // Dynamically create the emoji elements
+    const emojiContainer = document.getElementById('emojiContainer');
+    emojiData.forEach(data => {
+      const emojiDiv = document.createElement('div');
+      emojiDiv.classList.add('emoji');
+      emojiDiv.innerHTML = data.emoji;
+
+      // Create the story element for each emoji
+      const storyDiv = document.createElement('div');
+      storyDiv.classList.add('story');
+      storyDiv.innerHTML = data.story;
+      emojiDiv.appendChild(storyDiv);
+
+      // Create the emoji name below each emoji
+      const emojiNameDiv = document.createElement('div');
+      emojiNameDiv.classList.add('emoji-name');
+      emojiNameDiv.innerHTML = data.name;
+      emojiDiv.appendChild(emojiNameDiv);
+
+      // Attach to container
+      emojiDiv.setAttribute('data-name', data.name);
+      emojiDiv.setAttribute('data-story', data.story);
+      emojiContainer.appendChild(emojiDiv);
+    });
+
+    // Handle text input and show the related emoji's story
+    function handleTextInput() {
+      const input = document.getElementById('emojiInput').value.toLowerCase();
+      const emojis = document.querySelectorAll('.emoji');
+
+      emojis.forEach(emoji => {
+        const storyDiv = emoji.querySelector('.story');
+        
+        if (emoji.getAttribute('data-name') === input) {
+          emoji.style.opacity = 0.5;  // Reduce opacity when story is shown
+          storyDiv.style.display = 'block';  // Show the story above the emoji
+        } else {
+          emoji.style.opacity = 1;  // Reset opacity when story is hidden
+          storyDiv.style.display = 'none';   // Hide the story for non-matching emojis
+        }
+      });
+    }
+  </script>
+
+</body>
+</html>
